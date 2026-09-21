@@ -241,7 +241,8 @@ const bgm=document.getElementById('bgm');
 bgm.volume=0.25;
 let muted=false;
 function toggleSound(){muted=!muted;bgm.muted=muted;document.getElementById('sound-btn').textContent=muted?'SFX OFF':'SFX ON';}
-function startBgm(){bgm.play().catch(()=>{});}
+let bgmStarted=false;
+function startBgm(){if(bgmStarted)return;bgmStarted=true;bgm.play().catch(()=>{});}
 
 const AudioCtx=window.AudioContext||window.webkitAudioContext;
 let aud=null;
@@ -450,8 +451,8 @@ let menuActive=0;
 const menuItems=document.querySelectorAll('.menu-item');
 function updateActive(){menuItems.forEach((el,i)=>el.classList.toggle('active',i===menuActive));}
 menuItems.forEach((item,i)=>{
-  item.addEventListener('mouseenter',()=>{menuActive=i;updateActive();playMove();});
-  item.addEventListener('click',()=>{playSelect();setTimeout(()=>openSection(item.dataset.section),80);});
+  item.addEventListener('mouseenter',()=>{menuActive=i;updateActive();playMove();startBgm();});
+  item.addEventListener('click',()=>{startBgm();playSelect();setTimeout(()=>openSection(item.dataset.section),80);});
 });
 document.addEventListener('keydown',e=>{
   const open=document.querySelector('.section-screen.visible');
