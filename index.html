@@ -295,7 +295,7 @@ function initBgCanvas(){
   // Sign is on the right side pointing right -- char walks right-to-left past it
   // Actually sign points right so char should come from right walking left toward sign
   // Place sign at ~75% from left. Char walks from right (100%) toward left (0%), direction: left
-  const char={x:0, frame:0, timer:0, speed:0.65};
+  const char={x:0, frame:0, timer:0, speed:0.65, waiting:false, waitTimer:0};
   // Initialise x after we have W -- done in draw() first call
 
   // Coins -- sides only
