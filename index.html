@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guilherme Duarte | Portfolio</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+:root{
+  --gb-black:#0f380f;--gb-dark:#306230;--gb-mid:#8bac0f;
+  --gb-light:#9bbc0f;--gb-lightest:#e0f8d0;--gb-screen:#1a2e1a;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:'Press Start 2P',monospace;overflow:hidden;}
+#intro{position:fixed;inset:0;background:#111;display:flex;align-items:center;justify-content:center;z-index:200;transition:opacity 0.4s ease;}
+#intro.fade-out{opacity:0;pointer-events:none;}
+.gb-shell{width:220px;background:#c8c8b8;border-radius:12px 12px 40px 12px;padding:18px 18px 28px;box-shadow:0 0 0 3px #aaa,0 8px 32px rgba(0,0,0,.7);display:flex;flex-direction:column;align-items:center;gap:10px;animation:gbAppear 0.5s cubic-bezier(.2,0,.6,1) 0.3s both;}
+@keyframes gbAppear{from{transform:scale(.4);opacity:0;}to{transform:scale(1);opacity:1;}}
+.gb-bezel{width:164px;background:#888;border-radius:6px 6px 20px 6px;padding:10px;box-shadow:inset 0 2px 4px rgba(0,0,0,.4);}
+.gb-screen-area{width:100%;aspect-ratio:10/9;background:var(--gb-screen);border-radius:2px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;}
+.gb-boot-text{text-align:center;color:var(--gb-light);}
+.gb-boot-text .t1{font-size:7px;color:var(--gb-lightest);letter-spacing:1px;margin-bottom:10px;line-height:1.8;}
+.gb-boot-text .t2{font-size:5px;color:var(--gb-mid);letter-spacing:1px;margin-bottom:14px;}
+.gb-boot-text .press{font-size:5px;color:var(--gb-light);animation:blink 0.9s step-end infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.gb-controls{width:164px;display:flex;justify-content:space-between;align-items:center;margin-top:4px;}
+.gb-dpad{width:48px;height:48px;position:relative;}
+.gb-dpad::before{content:'';position:absolute;top:33%;left:0;width:100%;height:34%;background:#777;border-radius:2px;}
+.gb-dpad::after{content:'';position:absolute;left:33%;top:0;width:34%;height:100%;background:#777;border-radius:2px;}
+.gb-ab{display:flex;gap:8px;align-items:center;}
+.gb-btn{width:18px;height:18px;background:#8b4b8b;border-radius:50%;box-shadow:0 2px 0 #5a2f5a;}
+.gb-ss{display:flex;gap:8px;margin-top:2px;}
+.gb-ss-btn{width:22px;height:7px;background:#777;border-radius:4px;transform:rotate(-20deg);}
+.gb-label{font-family:sans-serif;font-size:9px;color:#8b4b8b;font-style:italic;font-weight:bold;letter-spacing:1px;align-self:flex-start;margin-top:4px;}
+#screen-zoom{position:fixed;background:var(--gb-screen);border-radius:2px;z-index:300;pointer-events:none;opacity:0;}
+#screen-zoom.zooming{opacity:1;animation:screenZoom 0.55s cubic-bezier(.4,0,.2,1) forwards;}
+@keyframes screenZoom{from{border-radius:2px;}to{top:0!important;left:0!important;width:100vw!important;height:100vh!important;border-radius:0;}}
+#menu{position:fixed;inset:0;background:var(--gb-black);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s ease 0.1s;overflow:hidden;}
+#menu.visible{opacity:1;pointer-events:all;}
+#menu::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0,transparent 3px,rgba(0,0,0,.14) 3px,rgba(0,0,0,.14) 4px);pointer-events:none;z-index:1;}
+#bg-canvas{position:absolute;inset:0;width:100%;height:100%;}
+.menu-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;}
+.game-title{font-size:clamp(14px,3vw,22px);color:var(--gb-lightest);text-align:center;letter-spacing:3px;margin-bottom:6px;text-shadow:3px 3px 0 var(--gb-dark);}
+.game-subtitle{font-size:clamp(6px,1.1vw,8px);color:var(--gb-mid);letter-spacing:2px;margin-bottom:48px;text-align:center;}
+.menu-list{list-style:none;display:flex;flex-direction:column;gap:20px;}
+.menu-item{display:flex;align-items:center;gap:18px;cursor:pointer;padding:4px 8px;user-select:none;}
+.pointer{font-size:13px;color:var(--gb-light);width:18px;display:inline-block;opacity:0;}
+.menu-item.active .pointer{opacity:1;animation:bob 0.45s ease-in-out infinite alternate;}
+@keyframes bob{from{transform:translateX(0);}to{transform:translateX(6px);}}
+.menu-label{font-size:clamp(9px,1.8vw,13px);color:var(--gb-light);letter-spacing:1.5px;transition:color 0.1s;}
+.menu-item.active .menu-label{color:var(--gb-lightest);}
+.gb-footer{position:absolute;bottom:14px;font-size:6px;color:var(--gb-dark);letter-spacing:1px;z-index:2;text-align:center;}
+.section-screen{display:none;position:fixed;inset:0;background:var(--gb-black);z-index:50;flex-direction:column;overflow-y:auto;}
+.section-screen.visible{display:flex;animation:screenIn 0.2s ease forwards;}
+@keyframes screenIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.section-header{background:var(--gb-dark);padding:14px 24px;display:flex;align-items:center;gap:16px;border-bottom:4px solid var(--gb-mid);flex-shrink:0;}
+.back-btn{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--gb-lightest);background:none;border:2px solid var(--gb-mid);padding:6px 10px;cursor:pointer;letter-spacing:1px;}
+.back-btn:hover{background:var(--gb-mid);color:var(--gb-black);}
+.section-title{font-size:10px;color:var(--gb-lightest);letter-spacing:2px;}
+.section-body{padding:32px 24px 48px;max-width:680px;margin:0 auto;width:100%;flex:1;}
+.pixel-text{font-size:7.5px;color:var(--gb-light);line-height:2.4;letter-spacing:.5px;margin-bottom:20px;}
+.pixel-text span{color:var(--gb-lightest);}
+.section-divider{font-size:7px;color:var(--gb-mid);letter-spacing:1px;margin:20px 0 12px;border-bottom:2px solid var(--gb-dark);padding-bottom:6px;}
+.skill-row{display:flex;align-items:center;gap:12px;margin-bottom:11px;}
+.skill-name{font-size:7px;color:var(--gb-mid);width:140px;flex-shrink:0;letter-spacing:.5px;}
+.stars{display:flex;gap:4px;}
+.star{font-size:12px;line-height:1;}
+.star.on{color:var(--gb-lightest);}
+.star.off{color:var(--gb-dark);}
+.quest-card{border:3px solid var(--gb-mid);padding:18px 16px 16px;margin-bottom:24px;background:var(--gb-screen);position:relative;}
+.quest-card::before{position:absolute;top:-10px;left:10px;background:var(--gb-black);font-size:6px;padding:0 6px;letter-spacing:1px;}
+.quest-card.complete::before{content:'QUEST COMPLETE';color:var(--gb-mid);}
+.quest-card.ongoing::before{content:'IN PROGRESS';color:var(--gb-lightest);}
+.quest-card.ongoing{border-color:var(--gb-lightest);}
+.quest-title{font-size:9px;color:var(--gb-lightest);margin-bottom:10px;letter-spacing:1px;}
+.quest-desc{font-size:6.5px;color:var(--gb-mid);line-height:2.1;margin-bottom:12px;letter-spacing:.5px;}
+.loot{display:flex;flex-wrap:wrap;gap:6px;}
+.loot-item{font-size:5.5px;color:var(--gb-black);background:var(--gb-light);padding:3px 8px;letter-spacing:.5px;}
+.quest-link{display:inline-block;margin-top:12px;font-size:6px;color:var(--gb-light);text-decoration:none;border-bottom:1px solid var(--gb-mid);letter-spacing:.5px;}
+.quest-link:hover{color:var(--gb-lightest);}
+.contact-item{display:flex;align-items:center;gap:14px;margin-bottom:16px;padding:14px;border:2px solid var(--gb-dark);cursor:pointer;text-decoration:none;transition:border-color 0.15s,background 0.15s;}
+.contact-item:hover{border-color:var(--gb-mid);background:rgba(155,188,15,0.08);}
+.contact-icon{font-size:18px;flex-shrink:0;}
+.contact-label{font-size:7px;color:var(--gb-mid);display:block;margin-bottom:4px;}
+.contact-value{font-size:7px;color:var(--gb-lightest);}
+#sound-btn{position:fixed;top:14px;right:14px;z-index:400;font-family:'Press Start 2P',monospace;font-size:8px;background:var(--gb-dark);color:var(--gb-lightest);border:2px solid var(--gb-mid);padding:6px 10px;cursor:pointer;display:none;}
+#sound-btn.visible{display:block;}
+#sound-btn:hover{background:var(--gb-mid);color:var(--gb-black);}
+</style>
+</head>
+<body>
+<button id="sound-btn" onclick="toggleSound()">SFX ON</button>
+<audio id="bgm" loop style="display:none"><source src="music.mp3" type="audio/mpeg"></audio>
+
+<div id="intro">
+  <div class="gb-shell">
+    <div class="gb-label">Game Portfolio</div>
+    <div class="gb-bezel">
+      <div class="gb-screen-area" id="gbScreenArea">
+        <div class="gb-boot-text">
+          <div class="t1">GUILHERME<br>DUARTE</div>
+          <div class="t2">2026 TurnGui</div>
+          <div class="press">PRESS START</div>
+        </div>
+      </div>
+    </div>
+    <div class="gb-controls">
+      <div class="gb-dpad"></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <div class="gb-ab"><div class="gb-btn"></div><div class="gb-btn"></div></div>
+        <div class="gb-ss"><div class="gb-ss-btn"></div><div class="gb-ss-btn"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="screen-zoom"></div>
+
+<div id="menu">
+  <canvas id="bg-canvas"></canvas>
+  <div class="menu-content">
+    <div class="game-title">GUILHERME DUARTE</div>
+    <div class="game-subtitle">JUNIOR BACKEND DEVELOPER</div>
+    <ul class="menu-list" id="menuList">
+      <li class="menu-item active" data-section="about"><span class="pointer">></span><span class="menu-label">ABOUT ME</span></li>
+      <li class="menu-item" data-section="skills"><span class="pointer">></span><span class="menu-label">SKILLS</span></li>
+      <li class="menu-item" data-section="projects"><span class="pointer">></span><span class="menu-label">PROJECTS</span></li>
+      <li class="menu-item" data-section="contact"><span class="pointer">></span><span class="menu-label">CONTACT</span></li>
+    </ul>
+  </div>
+  <div class="gb-footer">2026 TurnGui -- CRAFTED WITH COFFEE AND CODE</div>
+</div>
+
+<div class="section-screen" id="about-screen">
+  <div class="section-header"><button class="back-btn" onclick="closeSection()">BACK</button><span class="section-title">// ABOUT ME</span></div>
+  <div class="section-body">
+    <canvas id="avatar-canvas" width="48" height="96" style="image-rendering:pixelated;margin-bottom:20px;"></canvas>
+    <p class="pixel-text">Hey! I am <span>Guilherme Duarte</span>, a recent<br><span>Computer Science graduate</span> from<br><span>Universidade do Minho</span>, Braga.<br><br>I love building clean, tested,<br>production-ready <span>backend APIs.</span><br>Looking for my first <span>junior backend</span><br>role in the Braga / Porto area.</p>
+    <div class="section-divider">VOLUNTEER</div>
+    <p class="pixel-text"><span>CoderDojo</span> instructor and<br><span>Banco Alimentar</span> volunteer.</p>
+    <div class="section-divider">HOBBIES</div>
+    <p class="pixel-text">When not coding I enjoy <span>fishing</span> and<br>competitive <span>board games</span> -- currently<br>deep into <span>Warhammer 40K.</span></p>
+    <div class="section-divider">CHARACTER STATS</div>
+    <div class="skill-row"><span class="skill-name">Backend Dev</span><div class="stars" data-n="4"></div></div>
+    <div class="skill-row"><span class="skill-name">Problem Solving</span><div class="stars" data-n="5"></div></div>
+    <div class="skill-row"><span class="skill-name">Java / Spring</span><div class="stars" data-n="4"></div></div>
+    <div class="skill-row"><span class="skill-name">Linux</span><div class="stars" data-n="4"></div></div>
+    <div class="skill-row"><span class="skill-name">Communication</span><div class="stars" data-n="5"></div></div>
+  </div>
+</div>
+
+<div class="section-screen" id="skills-screen">
+  <div class="section-header"><button class="back-btn" onclick="closeSection()">BACK</button><span class="section-title">// SKILLS</span></div>
+  <div class="section-body">
+    <div class="section-divider">PROGRAMMING LANGUAGES</div>
+    <div class="skill-row"><span class="skill-name">Java</span><div class="stars" data-n="4"></div></div>
+    <div class="skill-row"><span class="skill-name">C</span><div class="stars" data-n="5"></div></div>
+    <div class="skill-row"><span class="skill-name">SQL</span><div class="stars" data-n="4"></div></div>
+    <div class="skill-row"><span class="skill-name">C# / .NET</span><div class="stars" data-n="3"></div></div>
+    <div class="skill-row"><span class="skill-name">Python</span><div class="stars" data-n="3"></div></div>
+    <div class="section-divider">FRAMEWORKS</div>
+    <div class="skill-row"><span class="skill-name">Spring Boot</span><div class="stars" data-n="4"></div></div>
+    <div class="skill-row"><span class="skill-name">Spring Security</span><div class="stars" data-n="3"></div></div>
+    <div class="skill-row"><span class="skill-name">Spring Data JPA</span><div class="stars" data-n="4"></div></div>
+    <div class="skill-row"><span class="skill-name">JUnit / Mockito</span><div class="stars" data-n="3"></div></div>
+    <div class="section-divider">INFRA AND TOOLS</div>
+    <div class="skill-row"><span class="skill-name">Docker</span><div class="stars" data-n="3"></div></div>
+    <div class="skill-row"><span class="skill-name">PostgreSQL</span><div class="stars" data-n="3"></div></div>
+    <div class="skill-row"><span class="skill-name">Git / GitHub</span><div class="stars" data-n="4"></div></div>
+    <div class="skill-row"><span class="skill-name">Linux</span><div class="stars" data-n="4"></div></div>
+    <div class="skill-row"><span class="skill-name">Maven</span><div class="stars" data-n="3"></div></div>
+    <div class="section-divider">SPOKEN LANGUAGES</div>
+    <div class="skill-row"><span class="skill-name">Portuguese</span><div class="stars" data-n="5"></div></div>
+    <div class="skill-row"><span class="skill-name">English</span><div class="stars" data-n="5"></div></div>
+  </div>
+</div>
+
+<div class="section-screen" id="projects-screen">
+  <div class="section-header"><button class="back-btn" onclick="closeSection()">BACK</button><span class="section-title">// PROJECTS</span></div>
+  <div class="section-body">
+    <div class="quest-card complete">
+      <div class="quest-title">SPLITWISE API</div>
+      <p class="quest-desc">Splitwise-inspired expense-splitting REST API. JWT auth, EQUAL / PERCENTAGE / EXACT splitting strategies, debt netting and greedy simplification algorithm, unit tests with JUnit 5 and Mockito.</p>
+      <div class="loot"><span class="loot-item">Java</span><span class="loot-item">Spring Boot</span><span class="loot-item">JWT</span><span class="loot-item">PostgreSQL</span><span class="loot-item">Docker</span><span class="loot-item">JUnit 5</span><span class="loot-item">Mockito</span></div>
+      <a class="quest-link" href="https://github.com/TurnGui/splitwise-api" target="_blank">VIEW ON GITHUB</a>
+    </div>
+    <div class="quest-card complete">
+      <div class="quest-title">SPOTIFUM</div>
+      <p class="quest-desc">Spotify-inspired music platform built in Haskell. Functional architecture, playlist management, music library with full CRUD operations.</p>
+      <div class="loot"><span class="loot-item">Haskell</span><span class="loot-item">Functional</span><span class="loot-item">CLI</span></div>
+      <a class="quest-link" href="https://github.com/TurnGui/spotifum" target="_blank">VIEW ON GITHUB</a>
+    </div>
+    <div class="quest-card complete">
+      <div class="quest-title">SPORTORG DATABASE</div>
+      <p class="quest-desc">Sports organisation database system. Relational schema design, complex queries and reporting for managing athletes, competitions and results.</p>
+      <div class="loot"><span class="loot-item">SQL</span><span class="loot-item">PostgreSQL</span><span class="loot-item">Database Design</span></div>
+      <a class="quest-link" href="https://github.com/TurnGui/sportorg-database" target="_blank">VIEW ON GITHUB</a>
+    </div>
+    <div class="quest-card ongoing">
+      <div class="quest-title">CATCHLOG API</div>
+      <p class="quest-desc">Fish species and catch-log REST API. Built to diversify my stack beyond Java and explore the .NET ecosystem.</p>
+      <div class="loot"><span class="loot-item">C#</span><span class="loot-item">.NET</span><span class="loot-item">REST API</span></div>
+      <a class="quest-link" href="https://github.com/TurnGui" target="_blank">VIEW ON GITHUB</a>
+    </div>
+  </div>
+</div>
+
+<div class="section-screen" id="contact-screen">
+  <div class="section-header"><button class="back-btn" onclick="closeSection()">BACK</button><span class="section-title">// CONTACT</span></div>
+  <div class="section-body">
+    <p class="pixel-text" style="margin-bottom:28px">Open to <span>junior backend roles</span><br>in the Braga / Porto area.</p>
+    <a class="contact-item" href="https://github.com/TurnGui" target="_blank">
+      <span class="contact-icon">&#x1F4C1;</span><div><span class="contact-label">GITHUB</span><span class="contact-value">github.com/TurnGui</span></div>
+    </a>
+    <a class="contact-item" href="https://linkedin.com" target="_blank">
+      <span class="contact-icon">&#x1F4BC;</span><div><span class="contact-label">LINKEDIN</span><span class="contact-value">linkedin.com/in/...</span></div>
+    </a>
+    <a class="contact-item" href="mailto:guilherme@example.com">
+      <span class="contact-icon">&#x1F4E7;</span><div><span class="contact-label">EMAIL</span><span class="contact-value">guilherme@example.com</span></div>
+    </a>
+  </div>
+</div>
+
+<script>
+const SP = {
+  tile_9: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwgAADsIBFShKgAAAABh0RVh0U29mdHdhcmUAcGFpbnQubmV0IDQuMS40E0BoxAAAAHJJREFUOE9j4JBQIAmBNDz4cYEYZJIRhtDQcaAAyACSeBgIDRAE4eNnABHUBqAQMQhFA8RS/AyEBqAQQUSxBiADjiAq0ESwaIAz4BqQRbBogIsCGZgiFDsJyIcjiAY0ESCJooEgQtEANwk/gmogAUkoAADFpRPO+p1TPQAAAABJRU5ErkJggg==",
+  tile_5: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwgAADsIBFShKgAAAABh0RVh0U29mdHdhcmUAcGFpbnQubmV0IDQuMS40E0BoxAAAAKVJREFUOE+Vj8ENAkEMA3lSwj2vCGqhBp6UQVlXwpVAGTwxGjTJLjxAsiLHsZPdw3FZ/8IrcH/sVBB+265ByOly7jy1LkRFwtF9EPC+oATR3fW6kMC0W5NtDENgGqd+rqgAg155pBlrUH9wYBv0O8OTkJyJ74Fgut4diPCgPh0JH1y3SWo9CclM0N2SIRA4RqGFVABogkyttuEPrpmIPLUu/IRlfQJj/PHHc490HAAAAABJRU5ErkJggg==",
+  tile_2: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjEuNBNAaMQAAABwSURBVDhPY3jw48L/jgMFZGEOCYX/YANMMsLIwtQxAERQghn+/4cYAvITNltwYZAekF4UA0A0TJIQDcJwA0g1BIRh+uAGgDBMkhBG1oNiADkYqyApGKsgKRirICkYqyApGKsgKRirICkYqyDx+D8DALyteBN7YgupAAAAAElFTkSuQmCC",
+  decoration_2: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwQAADsEBuJFr7QAAABh0RVh0U29mdHdhcmUAcGFpbnQubmV0IDQuMS40E0BoxAAAAKBJREFUOE+lj7ENwzAQA11mBJceIrNkhpQew2N5BI+QMdJ9cAXlN/UIILg4UE89KXuKiFuU5gilOUJpjlCazmNeAtyHzhAKoJ/vEdu+liWXQSiEAuHn+zVWoBf/vQ6dAbkA9YJ8voR0geqTCefPR/V7zC2cTXk5rDv5mstlX8Svzq3AAz6Dl2ivK9Cln7OCcq0AqmXUvZzpCvRqVvfOTEw/VUyBy4Qra6EAAAAASUVORK5CYII=",
+  decoration_7: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwAAADsABataJCQAAABh0RVh0U29mdHdhcmUAcGFpbnQubmV0IDQuMS42/U4J6AAAAZNJREFUWEfFk8tRxEAQQzkSAkeCIBZi4EgYhEUIhEAY3Ezp8CiNRmPDerc4vBq3pltq7+du27Z/pYqNp5fnDfLO+W0fTML9w+PmuKFrOUfP2/vrD8xkrzMUBHiQm2Kok36/o/fz62Pox78xFAQTgrnjOs86Hb93T8+CoSA4jXijpPW6Jv68ACYYKrwtQEDq3HHuhYtJOAonmL5VDycLrJaYBIYbHsx5tKSTWWISfKCZeu33rmefk3lDIXxwZQLct77U9BXozLyhEM1MpE7d8Lkk84ZC8IPxoRaQmsNcemWWmIQckmH+0ND3aoEPnpklJsEXwDDD/W5Vw164qGIu4GRAI/v2lpgEcLO2gNcrnRc5tcCK1QKNixZgyM099AjmeU5/qKJwA/AF8i41n9eZ/lBFByOnBfDcSE+nig7mKxTgz5ohWBo+K6q4AtMMdXLmiCo2COUUeX/TBfbCz1DFBm94zXBRxYb//fLuDFVsKPwWS1SxQThn3l9KFVconAWutUQVV7AAS1zjq6jiHv4JnF9iu/sG3chDnbXK+ckAAAAASUVORK5CYII=",
+  sign: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwAAADsABataJCQAAABh0RVh0U29mdHdhcmUAcGFpbnQubmV0IDQuMS42/U4J6AAAAIlJREFUOE+1j80NgDAIRnt0BI8O4SzO4NExHMsRHMExvGHQ0NAPaOLf4ZWk8L1AIqJXnM+2rzQvE2Htx8HQtF2uhQDDGi9sBFFY8CRGUINntKS6AdcILTGCO5L/NojAsBHUJBKUsNRCwIOeJAobgR5kRKYDSBZ4oAD7gvvJfCKQcx4J8H7sX1A6AJDKsWnGa3o/AAAAAElFTkSuQmCC",
+  coin_1: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABIUlEQVRYR+2XIQ7CQBBFt44jEFQlAk04RkVFJUdAcwA0R0BWVPQYBI1AVhGOgIP8TX6yAXbY3dBOBWu2ZmZe/szOTDOjfDLl+Ga8AJNp/nDVud+6aFj6kGw/OoXhpWtt/HKzs/e5PZkYCPqAvWT7BuAaltXMBm/qaxSE64Mq+iC8APXxYKrV2trjGxChKrgKUsVkAEgIJVIBvsGLClD6VAAEZwqTFABAs98mp4BplApxvDXA3A/+ChAw5hn5WnlyH6BD1U445ICK7u+/hvsDjFuBkHku1USIvahAiAOpDyyKpW3l87zw7hK9AAAcwXkkiF4BEJjHp0KvABjjXGrUAKAAIFQAuEuoAqjWgNor4E6h1gded4roP6Nfj1zJn/owegJp92owy4Bw9gAAAABJRU5ErkJgggAA",
+  coin_2: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAoklEQVRYR2NkGGDAOMD2M4w6YPCGAIeEwn/k9PHjxQOSHQszA59erIaCNN54sAFuf0hBG8OVDacYSHEEzAxCevE6YMWJBWBHrFnxbIQ6ABR8MEDXKABZOqCJkJ6lI8lZi9qOG3XAaAiMhsBoCOANAWLqc3wFEzH6aeYAkOU6AWYMayZUMWgoBOBsS4w6YPiGAHKbguRGKbWrXHzmjRZEoyEAAAVuoiGVP1sVAAAAAElFTkSuQmCC",
+  tile_13: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAgCAYAAAAbifjMAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwQAADsEBuJFr7QAAABh0RVh0U29mdHdhcmUAcGFpbnQubmV0IDQuMS40E0BoxAAAAQFJREFUSEutkMERgkAQBH0SAk+CMBZj8GkYhmUIhmAY/k6HqqZml+NQ4DG17N1M7x6nUsouzQ66fviWeIZqd6GR4fV+lppx6a5quj9uo9Hl554JAMkDhM7XywTK/tBIhBV0Acn+0EgAmIj+Bmiqh3cBNj3hkA0Ibt4A/byBDBmQN8iQECaoqh6IvjMoADyMgHgYOSQAVLMxhwE2Aa0n8K0aAFwSWnqCewNg9xP80gMugquAltw7A2BoyX0TAAjS/2CKVIOTCwBCLYBPDwCJwNoGngkAaQ2Q/aGRDgEQqn1nf2hk8Ol+vrTFZNiiEaAPTWVyri5tQGWbAGhBPEzt+qF8AK9Fw/kRt4iwAAAAAElFTkSuQmCC",
+  char_left: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAQCAYAAACm53kpAAABdklEQVR4nMVXPa6DMAw2Tz0IG+rUN3KHLIipYmV5t4g4SNcqE+rSO3TtVLFxE95QmealSez8lOcFCfj82V9sJym+fxr4hD0u98X2ft8cio8QRvLvUh24sFIJ67fheF24PrbgL2wVQDjwBuHD5vCRm/8r1IFUwrk6FOlwvJL/bc3/JkCoA5d1dQ9d3a/YaR5hmkc2fit+pwA5E0BcVbarT8q24mdVQEwC59spJMZ/43cKkJIAlir6wOc0j1CVLWuSx/Lvm0MRws/eBVB5XwI6ztevlACx/Dqey20VwOeEk7xueuAhFZDrHIAL4eJ2HoQAnluOmQRlXd1DVbYr9nw7Ba1eKr8pHPpwYVlDkEOMvWf+a3sXalz843JfpnkEqcSfFtQHpykQKQCCuUPJ3KqkEiCViN7CQvkBnqKjCLgArhicMwDgpZbeT6EDSCqxtkXoRSgHPxUDKYA5TGKTiLkF5uCnYvAOQYBXCQ7AP4bqlnr9TeWnYvgFxeBYTBkb6gcAAAAASUVORK5CYII=",
+  chest: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjEuNBNAaMQAAAB7SURBVDhPpY6xDYAwEAMpGYGSIZiFGSgZg7EYgREYg87oC0cJMVIMxcmRE5/SAfiFLB1k6SBLB1k6yNJBlg6ydEiH8zqw7Sv6YWyiEHA8LXPKN2LMTIIv40rwlETyIQUcMwsBR3yoBPm4EiiJIpcUgiidsfxBwMsWAHQ3BXGBC8XBLKoAAAAASUVORK5CYII=",
+};
+const IMG = {};
+Object.keys(SP).forEach(k=>{ IMG[k]=new Image(); IMG[k].src=SP[k]; });
+
+const bgm=document.getElementById('bgm');
+bgm.volume=0.25;
+let muted=false;
+function toggleSound(){muted=!muted;bgm.muted=muted;document.getElementById('sound-btn').textContent=muted?'SFX OFF':'SFX ON';}
+function startBgm(){bgm.play().catch(()=>{});}
+
+const AudioCtx=window.AudioContext||window.webkitAudioContext;
+let aud=null;
+function getAud(){if(!aud)aud=new AudioCtx();return aud;}
+function tone(f,d,t='square',v=0.06){
+  if(muted)return;
+  try{const c=getAud(),o=c.createOscillator(),g=c.createGain();
+  o.connect(g);g.connect(c.destination);o.type=t;o.frequency.value=f;
+  g.gain.setValueAtTime(v,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);
+  o.start();o.stop(c.currentTime+d);}catch(e){}
+}
+function playMove(){tone(440,.055);}
+function playSelect(){tone(523,.07);setTimeout(()=>tone(659,.07),80);setTimeout(()=>tone(784,.11),160);}
+function playBack(){tone(330,.1);}
+
+function renderStars(){
+  document.querySelectorAll('.stars[data-n]').forEach(el=>{
+    const n=parseInt(el.dataset.n);
+    el.innerHTML=[...Array(5)].map((_,i)=>`<span class="star ${i<n?'on':'off'}">&#9733;</span>`).join('');
+  });
+}
+
+function drawAvatar(){
+  const c=document.getElementById('avatar-canvas');
+  if(!c)return;
+  const ctx=c.getContext('2d');
+  ctx.imageSmoothingEnabled=false;
+  ctx.clearRect(0,0,48,96);
+  const draw=()=>{ctx.imageSmoothingEnabled=false;ctx.drawImage(IMG.tile_13,0,0,16,32,0,0,48,96);};
+  if(IMG.tile_13.complete)draw();
+  else IMG.tile_13.onload=draw;
+}
+
+function initBgCanvas(){
+  const canvas=document.getElementById('bg-canvas');
+  const ctx=canvas.getContext('2d');
+  let W,H;
+  function resize(){W=canvas.width=canvas.offsetWidth;H=canvas.height=canvas.offsetHeight;}
+  resize();
+  window.addEventListener('resize',resize);
+
+  const T=48; // 16*3
+
+  function inMenuZone(x,y,w,h){
+    const cx=W/2,cy=H/2,mw=460,mh=360;
+    return x+w>cx-mw/2&&x<cx+mw/2&&y+h>cy-mh/2&&y<cy+mh/2;
+  }
+
+  // Character: starts off right edge, walks LEFT (towards the sign on the right side)
+  // Sign is on the right side pointing right -- char walks right-to-left past it
+  // Actually sign points right so char should come from right walking left toward sign
+  // Place sign at ~75% from left. Char walks from right (100%) toward left (0%), direction: left
+  const char={x:0, frame:0, timer:0, speed:0.65};
+  // Initialise x after we have W -- done in draw() first call
+
+  // Coins -- sides only
+  const coinPos=[
+    {x:0.05,y:0.36},{x:0.10,y:0.50},{x:0.16,y:0.30},
+    {x:0.83,y:0.40},{x:0.88,y:0.54},{x:0.94,y:0.29},
+  ];
+
+  // Decorations:
+  // Left side: 2 trees + 2 grass tufts (remove far-left-most tree from previous)
+  // Right side: 1 tree + 1 grass
+  const decos=[
+    {key:'decoration_7', xFrac:0.05, yOff:-T,     w:T,     h:T    },  // left tree 1
+    {key:'decoration_2', xFrac:0.11, yOff:-T*0.5, w:T*0.6, h:T*0.6},  // left grass 1
+    {key:'decoration_2', xFrac:0.15, yOff:-T*0.5, w:T*0.6, h:T*0.6},  // left grass 2
+    {key:'decoration_7', xFrac:0.84, yOff:-T,     w:T,     h:T    },  // right tree
+    {key:'decoration_2', xFrac:0.90, yOff:-T*0.5, w:T*0.6, h:T*0.6},  // right grass
+  ];
+
+  // Platforms: bottom-left and bottom-right, tile_2, 4 tiles each
+  const platforms=[
+    {xFrac:0.01, yFrac:0.62, tiles:4},
+    {xFrac:0.74, yFrac:0.57, tiles:4},
+  ];
+
+  let frame=0;
+  let charInitialised=false;
+
+  function draw(){
+    frame++;
+    const t=frame/60;
+    const groundY=Math.floor(H*0.80);
+
+    // Initialise char position once we have W
+    if(!charInitialised){
+      char.x=-T*2;
+      charInitialised=true;
+    }
+
+    ctx.clearRect(0,0,W,H);
+
+    // 1. Solid bg
+    ctx.fillStyle='#0f380f';
+    ctx.fillRect(0,0,W,H);
+
+    // 2. Platforms (tile_2) -- drawn before ground so ground overlaps bottom
+    if(IMG.tile_2.complete){
+      platforms.forEach(p=>{
+        const px=Math.floor(p.xFrac*W), py=Math.floor(p.yFrac*H);
+        for(let i=0;i<p.tiles;i++)
+          ctx.drawImage(IMG.tile_2,0,0,16,16,px+i*T,py,T,T);
+      });
+    }
+
+    // 3. Ground: tile_9 grass top row + tile_5 dirt fill
+    if(IMG.tile_9.complete&&IMG.tile_5.complete){
+      for(let tx=0;tx<W;tx+=T){
+        ctx.drawImage(IMG.tile_9,0,0,16,16,tx,groundY,T,T);
+        for(let ty=groundY+T;ty<H;ty+=T)
+          ctx.drawImage(IMG.tile_5,0,0,16,16,tx,ty,T,T);
+      }
+    }
+
+    // 4. Decorations (trees + grass tufts on ground)
+    decos.forEach(d=>{
+      if(!IMG[d.key]||!IMG[d.key].complete)return;
+      const dx=Math.floor(d.xFrac*W);
+      const dy=groundY+Math.floor(d.yOff);
+      const src=IMG[d.key];
+      ctx.imageSmoothingEnabled=false;
+      ctx.drawImage(src,0,0,src.naturalWidth,src.naturalHeight,dx,dy,Math.floor(d.w),Math.floor(d.h));
+    });
+
+    // 5. Chest: centred on ground
+    if(IMG.chest&&IMG.chest.complete){
+      const cx=Math.floor(W/2-T/2), cy=groundY-T;
+      ctx.imageSmoothingEnabled=false;
+      ctx.drawImage(IMG.chest,0,0,16,16,cx,cy,T,T);
+    }
+
+    // 6. Sign: right side, between chest and right tree, pointing right
+    // Character walks right-to-left, sign on the right points right (towards where char came from)
+    // This makes sense as a "this way" sign the char walked past
+    if(IMG.sign&&IMG.sign.complete){
+      const signX=Math.floor(0.72*W);
+      const signY=groundY-T;
+      ctx.imageSmoothingEnabled=false;
+      ctx.drawImage(IMG.sign,0,0,16,16,signX,signY,T,T);
+    }
+
+    // 7. Coins (bob, avoid menu zone)
+    const coinImg=frame%40<20?IMG.coin_1:IMG.coin_2;
+    if(coinImg&&coinImg.complete){
+      coinPos.forEach(c=>{
+        const cx=Math.floor(c.x*W), cy=Math.floor(c.y*H);
+        const bob=Math.round(Math.sin(t*2+c.x*10)*5);
+        const sz=Math.floor(T*0.7);
+        if(!inMenuZone(cx-sz/2,cy+bob-sz/2,sz,sz)){
+          ctx.imageSmoothingEnabled=false;
+          ctx.drawImage(coinImg,cx-sz/2,cy+bob-sz/2,sz,sz);
+        }
+      });
+    }
+
+    // 8. Character: walks right to left on ground
+    // Animate every 10 frames for slow walk feel
+    char.timer++;
+    if(char.timer%10===0) char.frame=(char.frame+1)%4;
+    char.x+=char.speed;
+    if(char.x<-T*2) char.x=-T*2;
+
+    const charY=groundY-T;
+    if(IMG.char_left&&IMG.char_left.complete){
+      ctx.imageSmoothingEnabled=false;
+      // char_left sheet: 4 frames of 16px each horizontally
+      ctx.drawImage(IMG.char_left, char.frame*16, 0, 16, 16, Math.floor(char.x), charY, T, T);
+    }
+
+    // 9. Scanlines
+    ctx.fillStyle='rgba(0,0,0,0.06)';
+    for(let i=0;i<H;i+=4)ctx.fillRect(0,i,W,1);
+
+    requestAnimationFrame(draw);
+  }
+
+  let started=false;
+  Object.values(IMG).forEach(img=>img.addEventListener('load',()=>{if(!started){started=true;draw();}}));
+  setTimeout(()=>{if(!started){started=true;draw();}},400);
+}
+
+function startIntro(){
+  document.getElementById('sound-btn').classList.add('visible');
+  setTimeout(()=>{
+    const el=document.getElementById('gbScreenArea');
+    const r=el.getBoundingClientRect();
+    const z=document.getElementById('screen-zoom');
+    z.style.top=r.top+'px';z.style.left=r.left+'px';
+    z.style.width=r.width+'px';z.style.height=r.height+'px';
+    z.classList.add('zooming');
+    setTimeout(()=>{
+      document.getElementById('menu').classList.add('visible');
+      initBgCanvas();
+      startBgm();
+      setTimeout(()=>{
+        document.getElementById('intro').classList.add('fade-out');
+        z.style.opacity='0';z.style.transition='opacity 0.2s ease';
+      },500);
+    },520);
+  },2600);
+}
+
+let menuActive=0;
+const menuItems=document.querySelectorAll('.menu-item');
+function updateActive(){menuItems.forEach((el,i)=>el.classList.toggle('active',i===menuActive));}
+menuItems.forEach((item,i)=>{
+  item.addEventListener('mouseenter',()=>{menuActive=i;updateActive();playMove();});
+  item.addEventListener('click',()=>{playSelect();setTimeout(()=>openSection(item.dataset.section),80);});
+});
+document.addEventListener('keydown',e=>{
+  const open=document.querySelector('.section-screen.visible');
+  if(open){if(e.key==='Escape'||e.key==='Backspace'){playBack();closeSection();}return;}
+  if(e.key==='ArrowDown'){menuActive=(menuActive+1)%menuItems.length;updateActive();playMove();}
+  else if(e.key==='ArrowUp'){menuActive=(menuActive-1+menuItems.length)%menuItems.length;updateActive();playMove();}
+  else if(e.key==='Enter'||e.key===' ')menuItems[menuActive].click();
+});
+function openSection(name){
+  document.getElementById(name+'-screen').classList.add('visible');
+  if(name==='about')setTimeout(drawAvatar,50);
+}
+function closeSection(){document.querySelectorAll('.section-screen').forEach(s=>s.classList.remove('visible'));}
+window.addEventListener('load',()=>{renderStars();startIntro();});
+</script>
+</body>
+</html>
