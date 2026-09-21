@@ -426,25 +426,37 @@ function initBgCanvas(){
   setTimeout(()=>{if(!started){started=true;draw();}},400);
 }
 
+function triggerZoom(){
+  const el=document.getElementById('gbScreenArea');
+  const r=el.getBoundingClientRect();
+  const z=document.getElementById('screen-zoom');
+  z.style.top=r.top+'px';z.style.left=r.left+'px';
+  z.style.width=r.width+'px';z.style.height=r.height+'px';
+  z.classList.add('zooming');
+  startBgm();
+  setTimeout(()=>{
+    document.getElementById('menu').classList.add('visible');
+    initBgCanvas();
+    setTimeout(()=>{
+      document.getElementById('intro').classList.add('fade-out');
+      z.style.opacity='0';z.style.transition='opacity 0.2s ease';
+    },500);
+  },520);
+}
+
 function startIntro(){
   document.getElementById('sound-btn').classList.add('visible');
-  setTimeout(()=>{
-    const el=document.getElementById('gbScreenArea');
-    const r=el.getBoundingClientRect();
-    const z=document.getElementById('screen-zoom');
-    z.style.top=r.top+'px';z.style.left=r.left+'px';
-    z.style.width=r.width+'px';z.style.height=r.height+'px';
-    z.classList.add('zooming');
-    setTimeout(()=>{
-      document.getElementById('menu').classList.add('visible');
-      initBgCanvas();
-      startBgm();
-      setTimeout(()=>{
-        document.getElementById('intro').classList.add('fade-out');
-        z.style.opacity='0';z.style.transition='opacity 0.2s ease';
-      },500);
-    },520);
-  },2600);
+  // Wait for any user input to trigger zoom + music
+  let triggered=false;
+  function onInput(){
+    if(triggered)return;
+    triggered=true;
+    document.removeEventListener('keydown',onInput);
+    document.removeEventListener('click',onInput);
+    triggerZoom();
+  }
+  document.addEventListener('keydown',onInput);
+  document.addEventListener('click',onInput);
 }
 
 let menuActive=0;
