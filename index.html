@@ -124,6 +124,7 @@ body{background:#111;display:flex;align-items:center;justify-content:center;min-
       <li class="menu-item active" data-section="about"><span class="pointer">></span><span class="menu-label">ABOUT ME</span></li>
       <li class="menu-item" data-section="skills"><span class="pointer">></span><span class="menu-label">SKILLS</span></li>
       <li class="menu-item" data-section="projects"><span class="pointer">></span><span class="menu-label">PROJECTS</span></li>
+      <li class="menu-item" data-cv="1"><span class="pointer">></span><span class="menu-label">CV</span></li>
       <li class="menu-item" data-section="contact"><span class="pointer">></span><span class="menu-label">CONTACT</span></li>
     </ul>
   </div>
@@ -216,6 +217,9 @@ body{background:#111;display:flex;align-items:center;justify-content:center;min-
     </a>
     <a class="contact-item" href="mailto:guilhermefduarte2702@gmail.com">
       <span class="contact-icon">&#x1F4E7;</span><div><span class="contact-label">EMAIL</span><span class="contact-value">guilhermefduarte2702@gmail.com</span></div>
+    </a>
+    <a class="contact-item" href="GuilhermeDuarte_CV.pdf" download="GuilhermeDuarte_CV.pdf">
+      <span class="contact-icon">&#x1F4C4;</span><div><span class="contact-label">CV</span><span class="contact-value">Download PDF</span></div>
     </a>
   </div>
 </div>
@@ -464,7 +468,7 @@ const menuItems=document.querySelectorAll('.menu-item');
 function updateActive(){menuItems.forEach((el,i)=>el.classList.toggle('active',i===menuActive));}
 menuItems.forEach((item,i)=>{
   item.addEventListener('mouseenter',()=>{menuActive=i;updateActive();playMove();startBgm();});
-  item.addEventListener('click',()=>{startBgm();playSelect();setTimeout(()=>openSection(item.dataset.section),80);});
+  item.addEventListener('click',()=>{startBgm();playSelect();setTimeout(()=>{if(item.dataset.cv){window.open('GuilhermeDuarte_CV.pdf','_blank');}else{openSection(item.dataset.section);}},80);});
 });
 document.addEventListener('keydown',e=>{
   const open=document.querySelector('.section-screen.visible');
